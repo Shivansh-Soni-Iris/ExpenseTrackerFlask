@@ -64,6 +64,9 @@
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('change_password') }}">Change password</a>
+            </li>
             {% else %}
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('login') }}">Login</a>
@@ -72,7 +75,9 @@
               <a class="nav-link" href="{{ url_for('register') }}">Register</a>
             </li>
             
+            
             {% endif %}
+            
             <li class="nav-item">
               <button
                 id="darkModeToggle"
@@ -81,6 +86,7 @@
                 🌙 Dark Mode
               </button>
             </li>
+
           </ul>
         </div>
       </div>

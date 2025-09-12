@@ -1,4 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, request, flash, session, send_file
+from flask_login import LoginManager, login_required,UserMixin, current_user,login_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
@@ -11,6 +12,13 @@ from io import BytesIO
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'   # redirect to login page if not logged in
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # Database path
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -33,7 +41,7 @@ CATEGORY_INFO = {
     "other": {"icon": "📦", "color": "#FF9F40"},
 }
 # ---------------- Models ----------------
-class User(db.Model):
+class User(db.Model,UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
@@ -53,6 +61,44 @@ def home():
     if 'user_id' in session:
         return redirect(url_for('dashboard'))
     return render_template('login.html')
+
+@app.route('/delete_expense/<int:expense_id>', methods=['POST'])
+@login_required
+def delete_expense(expense_id):
+    expense = Expense.query.get_or_404(expense_id)
+    if expense.user_id != current_user.id:
+        flash("Not authorized to delete this expense.", "danger")
+        return redirect(url_for('dashboard'))
+
+    db.session.delete(expense)
+    db.session.commit()
+    flash("Expense deleted successfully.", "success")
+    return redirect(url_for('dashboard'))
+
+@app.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    if request.method == 'POST':
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        # check current password
+        if not check_password_hash(current_user.password, current_password):
+            flash("Current password is incorrect.", "danger")
+            return redirect(url_for('change_password'))
+
+        if new_password != confirm_password:
+            flash("New passwords do not match.", "danger")
+            return redirect(url_for('change_password'))
+
+        # update password
+        current_user.password = generate_password_hash(new_password)
+        db.session.commit()
+        flash("Password updated successfully.", "success")
+        return redirect(url_for('dashboard'))
+
+    return render_template("change_password.html")
 
 # -------- Authentication --------
 @app.route('/register', methods=['GET', 'POST'])
@@ -77,9 +123,10 @@ def login():
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
-            session['user_id'] = user.id
+            login_user(user)
             return redirect(url_for('dashboard'))
-        flash('Invalid Credentials!', 'danger')
+        else:
+            flash("Invalid credentials", "danger")
         return redirect(url_for('login'))
     return render_template('login.html')
 

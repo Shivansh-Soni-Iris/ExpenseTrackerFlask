@@ -52,25 +52,24 @@ content %}
 
 <!-- Monthly Category Progress Bars -->
 <div class="card mb-4 shadow-sm p-3">
-    <h5 class="mb-3">Monthly Spending Breakdown</h5>
-    {% for cat, amt in category_data|dictsort(by="value", reverse=True) %}
-    {% set percent = (amt / total_spent * 100) if total_spent else 0 %}
-    <div class="d-flex justify-content-between align-items-center mb-1">
-        <span>
-            {% if category_info.get(cat.lower()) %}
-                {{ category_info[cat.lower()].icon }} {{ cat }}
-            {% else %}
-                📦 {{ cat }}
-            {% endif %}
-        </span>
-        <span>{{ "%.1f"|format(percent) }}%</span>
-    </div>
-    <div class="progress mb-3" style="height: 20px;">
-        <div class="progress-bar" role="progressbar" 
-             style="width: {{ percent }}%; background-color: {{ category_info[cat.lower()].color if category_info.get(cat.lower()) else '#6c757d' }}">
-        </div>
-    </div>
-{% endfor %}
+  <h5 class="mb-3">Monthly Spending Breakdown</h5>
+  {% for cat, amt in category_data|dictsort(by="value", reverse=True) %} {% set
+  percent = (amt / total_spent * 100) if total_spent else 0 %}
+  <div class="d-flex justify-content-between align-items-center mb-1">
+    <span>
+      {% if category_info.get(cat.lower()) %} {{ category_info[cat.lower()].icon
+      }} {{ cat }} {% else %} 📦 {{ cat }} {% endif %}
+    </span>
+    <span>{{ "%.1f"|format(percent) }}%</span>
+  </div>
+  <div class="progress mb-3" style="height: 20px">
+    <div
+      class="progress-bar"
+      role="progressbar"
+      style="width: {{ percent }}%; background-color: {{ category_info[cat.lower()].color if category_info.get(cat.lower()) else '#6c757d' }}"
+    ></div>
+  </div>
+  {% endfor %}
 </div>
 
 <!-- Charts Row -->
@@ -98,6 +97,7 @@ content %}
         <th>Category</th>
         <th>Description</th>
         <th>Amount (₹)</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -111,6 +111,15 @@ content %}
         </td>
         <td>{{ expense.description }}</td>
         <td>{{ "%.2f"|format(expense.amount) }}</td>
+        <td>
+          <form
+            action="{{ url_for('delete_expense', expense_id=expense.id) }}"
+            method="post"
+            style="display: inline"
+          >
+            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+          </form>
+        </td>
       </tr>
       {% else %}
       <tr>
@@ -124,54 +133,54 @@ content %}
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  const categoryData = {{ category_data|tojson|safe }};
-  const trendData = {{ trend_data|tojson|safe }};
-  const category_info = {{ category_info|tojson|safe }};
+    const categoryData = {{ category_data|tojson|safe }};
+    const trendData = {{ trend_data|tojson|safe }};
+    const category_info = {{ category_info|tojson|safe }};
 
-  // Category Pie Chart
- const categoryLabels = Object.keys(categoryData).map(cat => {
-    const catLower = cat.toLowerCase();
-    return category_info[catLower] ? category_info[catLower].icon + ' ' + cat : cat;
-});
-
-const categoryColors = Object.keys(categoryData).map(cat => {
-    const catLower = cat.toLowerCase();
-    return category_info[catLower] ? category_info[catLower].color : '#6c757d';
-});
-
-  new Chart(document.getElementById('categoryChart'), {
-      type: 'pie',
-      data: {
-          labels: categoryLabels,
-          datasets: [{
-              data: Object.values(categoryData),
-              backgroundColor: categoryColors
-          }]
-      },
-      options: {
-          responsive: true,
-          plugins: { legend: { position: 'bottom' } }
-      }
+    // Category Pie Chart
+   const categoryLabels = Object.keys(categoryData).map(cat => {
+      const catLower = cat.toLowerCase();
+      return category_info[catLower] ? category_info[catLower].icon + ' ' + cat : cat;
   });
 
-  // Trend Line Chart
-  new Chart(document.getElementById('trendChart'), {
-      type: 'line',
-      data: {
-          labels: Object.keys(trendData),
-          datasets: [{
-              label: 'Expenses Over Time (₹)',
-              data: Object.values(trendData),
-              fill: false,
-              borderColor: '#007bff',
-              backgroundColor: '#007bff',
-              tension: 0.2
-          }]
-      },
-      options: {
-          responsive: true,
-          scales: { y: { beginAtZero: true } }
-      }
+  const categoryColors = Object.keys(categoryData).map(cat => {
+      const catLower = cat.toLowerCase();
+      return category_info[catLower] ? category_info[catLower].color : '#6c757d';
   });
+
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'pie',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                data: Object.values(categoryData),
+                backgroundColor: categoryColors
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    // Trend Line Chart
+    new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+            labels: Object.keys(trendData),
+            datasets: [{
+                label: 'Expenses Over Time (₹)',
+                data: Object.values(trendData),
+                fill: false,
+                borderColor: '#007bff',
+                backgroundColor: '#007bff',
+                tension: 0.2
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
 </script>
 {% endblock %}
