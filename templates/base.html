@@ -55,17 +55,26 @@
         >
         <div class="collapse navbar-collapse">
           <ul class="navbar-nav ms-auto">
-            {% if session.get('user_id') %}
+            {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('dashboard') }}"
+                >Dashboard</a
+              >
+            </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('add_expense') }}"
                 >Add Expense</a
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+              <a class="nav-link" href="{{ url_for('change_password') }}"
+                >Change Password</a
+              >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('change_password') }}">Change password</a>
+              <a class="nav-link" href="{{ url_for('logout') }}">
+                Logout ({{ current_user.username }})
+              </a>
             </li>
             {% else %}
             <li class="nav-item">
@@ -74,10 +83,8 @@
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('register') }}">Register</a>
             </li>
-            
-            
             {% endif %}
-            
+
             <li class="nav-item">
               <button
                 id="darkModeToggle"
@@ -86,7 +93,6 @@
                 🌙 Dark Mode
               </button>
             </li>
-
           </ul>
         </div>
       </div>
