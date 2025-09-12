@@ -11,8 +11,14 @@ from io import BytesIO
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
+
+# Database path
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'instance', 'expense.db')
+DB_DIR = os.path.join(BASE_DIR, 'instance')  # ensure this folder exists
+os.makedirs(DB_DIR, exist_ok=True)            # create if missing
+
+DB_PATH = os.path.join(DB_DIR, 'expense.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
