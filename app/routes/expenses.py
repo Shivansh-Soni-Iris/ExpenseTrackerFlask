@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, jsonif
 from flask_login import login_required, current_user
 from app import db
 from app.models import Expense
-from datetime import datetime
+from datetime import datetime, date
 
 expenses_bp = Blueprint('expenses', __name__)
 
@@ -13,7 +13,8 @@ def dashboard():
     categories = {}
     for exp in expenses:
         categories[exp.category] = categories.get(exp.category, 0) + exp.amount
-    return render_template('dashboard.html', expenses=expenses, chart_data=categories)
+    today = date.today().isoformat() 
+    return render_template('dashboard.html', expenses=expenses, chart_data=categories,current_date=today)
 
 @expenses_bp.route('/add_expense', methods=['POST'])
 @login_required
