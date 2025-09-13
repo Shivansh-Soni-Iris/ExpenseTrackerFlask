@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Welcome, {{ current_user.username }}</h2>
+
+<form method="POST" action="{{ url_for('expenses.add_expense') }}" class="row g-3 mb-4">
+    <div class="col-md-2"><input type="number" step="0.01" name="amount" class="form-control" placeholder="Amount" required></div>
+    <div class="col-md-2"><input type="text" name="category" class="form-control" placeholder="Category" required></div>
+    <div class="col-md-3"><input type="text" name="description" class="form-control" placeholder="Description"></div>
+    <div class="col-md-3"><input type="date" name="date" class="form-control" required></div>
+    <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Add Expense</button></div>
+</form>
+
+<table class="table table-bordered table-striped">
+    <thead><tr><th>Amount</th><th>Category</th><th>Description</th><th>Date</th><th>Action</th></tr></thead>
+    <tbody>
+        {% for exp in expenses %}
+        <tr>
+            <td>{{ exp.amount }}</td>
+            <td>{{ exp.category }}</td>
+            <td>{{ exp.description }}</td>
+            <td>{{ exp.date }}</td>
+            <td><a href="{{ url_for('expenses.delete_expense', id=exp.id) }}" class="btn btn-sm btn-danger">Delete</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<canvas id="expenseChart" width="400" height="400"></canvas>
+<script>
+    const chartLabels = JSON.parse('{{ chart_data.keys()|list|tojson | safe }}');
+    const chartValues = JSON.parse('{{ chart_data.values()|list|tojson | safe }}');
+
+    const ctx = document.getElementById('expenseChart').getContext('2d');
+    const chartData = {
+        labels: chartLabels,
+        datasets: [{
+            label: 'Expenses by Category',
+            data: chartValues,
+            backgroundColor: ['#007bff','#28a745','#ffc107','#dc3545','#6f42c1','#17a2b8']
+        }]
+    };
+
+    const chartOptions = {
+        plugins: {
+            legend: {
+                position: 'right', // 👈 Moves legend to the right
+                align: 'center',   // 👈 Vertically centers the stack
+                labels: {
+                    boxWidth: 20,
+                    padding: 15
+                }
+            }
+        }
+    };
+
+    new Chart(ctx, {
+        type: 'pie',
+        data: chartData,
+        options: chartOptions
+    });
+</script>
+<style>
+  #expenseChart {
+    width: 400px !important;
+    height: 400px !important;
+  }
+</style>
+
+{% endblock %}
